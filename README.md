@@ -1,3 +1,3 @@
-# DevOps_Learning
+# DevOps Learning
 
 Some DevOps fundamentals learnings
