@@ -51,9 +51,13 @@ Note the lack of sudo; run this as the user so that you do not interrupt other u
 
 ## Useful Commands
 
+Show images available to be used:
+
+`podman image ls` or `buildah images`
+
 Show all containers that the user has access to:
 
-`podman ps -a`
+`podman ps -a` or `buildah containers`
 
 Inspect a container for metadata and details:
 
