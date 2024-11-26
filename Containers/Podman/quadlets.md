@@ -243,3 +243,62 @@ Secret=secretname,type=env,target=SECRET_ENV Exec=bash -c 'echo $SECRET_ENV'
 ```
 
 Then, I started the container with systemctl --user start test-secret. When running systemctl --user status test-secret, I saw the line containing secretdata which means that the environment 
+
+## Template with Options
+Source: https://blog.nerdon.eu/podman-quadlet-getting-started/
+```
+[Unit]
+# (Optional) A brief description of the service
+Description=
+# (Optional) Services you want to run with this one
+Wants=
+# (Optional) Services that need to start before this one
+After=
+
+[Container]
+# (Mandatory) The container's name
+ContainerName=
+# (Mandatory) The container image to use (e.g., docker.io/library/alpine)
+Image=
+# (Optional) Path to an .env file
+EnvironmentFile=
+# (Optional) Key=value pairs for environment variables
+Environment=
+# (Optional) Persistent storage paths (host:container)
+Volume=
+# (Optional) Custom network for the container
+Network=
+# (Optional) Ports to expose (host:container)
+PublishPort=
+# (Optional) Custom command to run in the container
+Exec=
+# (Optional) Additional Podman arguments
+PodmanArgs=
+# (Optional) Extra capabilities to add to the container
+AddCapability=
+# (Optional) Add host devices to the container
+AddDevice=
+# (Optional) Disable SELinux labels
+SecurityLabelDisable=
+# (Optional) Run as a specific user inside the container
+User=
+# (Optional) Autoupdate (also needs to be enabled systemctl --user enable podman-auto-update)
+AutoUpdate=registry
+# (Optional) Add metadata labels to the container
+Label=
+# (Optional) User ID mapping. Example: 0:10000:10 (Inside:Outside:Range)
+UIDMap=
+# (Optional) Group ID mapping Example: 0:10000:10 (Inside:Outside:Range)
+GIDMap=
+
+[Service]
+# (Optional) Set to 'always' or 'on-failure' to restart on failure
+Restart=
+# (Optional) Time to wait before considering a failure
+TimeoutStartSec=
+
+[Install]
+# (Optional) Target to start with (default: multi-user.target)
+WantedBy=
+
+```
