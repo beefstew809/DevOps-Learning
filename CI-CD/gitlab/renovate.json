@@ -1,0 +1,92 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":enableVulnerabilityAlertsWithLabel('security')",
+    ":preserveSemverRanges",
+    ":rebaseStalePrs",
+    "group:recommended"
+  ],
+  "labels": [
+    "renovate"
+  ],
+  "packageRules": [
+    {
+      "groupName": "devDependencies (non-major)",
+      "matchDepTypes": [
+        "devDependencies",
+        "require-dev"
+      ],
+      "matchUpdateTypes": [
+        "digest",
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "description": "Update MariaDB or MySQL on a patch level only, bumps to major and minor versions might break compatibilty with an application",
+      "enabled": false,
+      "managers": [
+        "docker-compose",
+        "dockerfile"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "packagePatterns": [
+        "^([^/]+\\/)*(mariadb|mysql)(:.+)?$"
+      ]
+    },
+    {
+      "description": "Update PostgreSQL on a minor version or patch level only, bumps to major versions might break compatibilty with an application",
+      "enabled": false,
+      "managers": [
+        "docker-compose",
+        "dockerfile"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "packagePatterns": [
+        "^([^/]+\\/)*postgres(:.+)?$"
+      ]
+    },
+    {
+      "description": "Ignore erroneous version tags of Semaphore",
+      "managers": [
+        "docker-compose",
+        "dockerfile"
+      ],
+      "packagePatterns": [
+        "^([^/]+\\/)*semaphore(:.+)?$"
+      ],
+      "allowedVersions": "!/^v?2\\.19\\.10$/"
+    },
+    {
+      "description": "Gitlab: Only allow version 17.x",
+      "enabled": true,
+      "managers": [
+        "docker-compose",
+        "dockerfile"
+      ],
+      "matchPackageNames": ["Gitlab"],
+      "versioning": "regex:^17(.\\d+){1,2}$"
+    },
+    {
+      "description": "Jira: Only allow version 4.5.x",
+      "enabled": true,
+      "managers": [
+        "docker-compose",
+        "dockerfile"
+      ],
+      "matchPackageNames": ["Jira"],
+      "versioning": "regex:^4.5.\\d+$"
+    }
+  ],
+  "separateMinorPatch": true,
+  "branchPrefix": "renovate/",
+  "assignees": ["@beefstew809"],
+  "stopUpdatingLabel": "renovate/stop_updating"
+}
