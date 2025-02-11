@@ -1,0 +1,101 @@
+name: Deploy containers via Tailscale
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install yamllint
+        run: |
+          python -m pip install --upgrade pip
+          pip install yamllint
+
+      - name: Run yamllint
+        id: yamllint
+        continue-on-error: true
+        run: |
+          yamllint docker-compose.yml
+          echo "YAMLLINT_EXIT_CODE=$?" >> $GITHUB_ENV
+
+      - name: Check yamllint result
+        if: env.YAMLLINT_EXIT_CODE != '0'
+        run: |
+          echo "::warning ::yamllint found issues. Please review the output above."
+
+      - name: Install Docker
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+
+      - name: Validate docker-compose.yml
+        run: docker compose -f docker-compose.yml config --no-interpolate
+
+  deploy-via-tailscale:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Connect Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      
+      - name: Deploy - Pull docker git repository
+        run: |
+          ssh -o "StrictHostKeyChecking no" user@host "
+            cd ~/docker/
+            git pull
+            exit
+          "
+      - name: Check for Renovate update
+        id: check-renovate
+        run: |
+          commit_message=$(git log -1 --pretty=%B)
+          if [[ $commit_message == *"Merge pull request"* ]] && \
+             [[ $commit_message == *"renovate"* ]] && \
+             [[ $commit_message == *"Docker tag"* ]]; then
+            echo "is_renovate_update=true" >> $GITHUB_OUTPUT
+            full_image_name=$(echo "$commit_message" | grep -oP '(?<=Update ).*(?= Docker tag)')
+            echo "full_image_name=$full_image_name" >> $GITHUB_OUTPUT
+            service_name=$(echo "$full_image_name" | awk -F'/' '{print $NF}')
+            echo "service_name=$service_name" >> $GITHUB_OUTPUT
+          else
+            echo "is_renovate_update=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Update and restart specific container
+        if: steps.check-renovate.outputs.is_renovate_update == 'true'
+        run: |
+          ssh -o "StrictHostKeyChecking no" user@host "
+            cd ~/docker/
+            docker compose pull ${{ steps.check-renovate.outputs.service_name }}
+            docker compose up --force-recreate --build -d ${{ steps.check-renovate.outputs.service_name }}
+            exit
+          "
+
+      - name: Send Notification
+        run: |
+          if [[ ${{ steps.check-renovate.outputs.is_renovate_update }} == 'true' ]]; then
+            echo "Updated and restarted container for ${{ steps.check-renovate.outputs.full_image_name }}"
+            echo "Service name used: ${{ steps.check-renovate.outputs.service_name }}"
+          else
+            echo "Repository updated, but no specific container updates were needed"
+          fi
+          echo "Find out how to do this with apprise or something"
