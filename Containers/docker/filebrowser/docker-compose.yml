@@ -1,0 +1,40 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:v2.32.0-s6
+    container_name: filebrowser
+    networks:
+      - proxy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    # ports:
+    #   - 8082:80
+    environment:
+      TZ: $TZ
+      PUID: $PUID
+      PGID: $PGID
+    volumes:
+      - $DOCKERDIR:/srv/docker
+      - $DOCKERDIR/filebrowser/share:/srv/share
+      - $MEDIAFOLDER:/srv/media
+      # - $DOCKERDIR/filebrowser/database/filebrowser.db:/database/database.db
+      # - $DOCKERDIR/filebrowser/config/settings.json:/config/settings.json
+      - $DOCKERDIR/filebrowser/database/:/database/
+      - $DOCKERDIR/filebrowser/config/:/config/
+    labels:
+      #Homepage
+      # - homepage.group=File Sharing
+      # - homepage.name=Filebrowser
+      # - homepage.icon=draw-io.png
+      # - homepage.href=https://filebrowser1.$DOMAINNAME_1
+      # - homepage.description=Access Files
+      #Traefik
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.filebrowser1-rtr.entrypoints=websecure"
+      - "traefik.http.routers.filebrowser1-rtr.rule=Host(`filebrowser1.$DOMAINNAME_1`)"
+      # Middlewares
+      - "traefik.http.routers.filebrowser1-rtr.middlewares=chain-authentik-proxy-auth@file"
+      # HTTP Services
+      - "traefik.http.routers.filebrowser1-rtr.service=filebrowser1-svc"
+      - "traefik.http.services.filebrowser1-svc.loadbalancer.server.port=80"

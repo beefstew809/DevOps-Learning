@@ -1,0 +1,18 @@
+---
+# |For configuration options and examples, please see:
+# https://gethomepage.dev/latest/configs/docker/
+
+docker1:
+  host: socket-proxy
+  port: 2375
+
+docker2:
+  host: 192.168.1.9
+  port: 2375
+
+docker3:
+ host: 192.168.1.10
+ port: 2375
+
+# my-docker:
+#   socket: /var/run/docker.sock

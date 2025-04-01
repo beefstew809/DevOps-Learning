@@ -1,0 +1,78 @@
+---
+# |For configuration options and examples, please see:
+# https://gethomepage.dev/latest/configs/services
+
+- Apps:
+  - Code Server:
+      icon: sh-visual-studio-code.png
+      href: https://code.mydomain.com
+      description: Web IDE
+  - Gitea:
+      icon: sh-gitea.png
+      href: https://gitea.mydomain.com
+      description: Git Manager
+  - Draw.io:
+      icon: sh-draw-io.png
+      href: https://drawio.mydomain.com
+      description: Online Diagrams
+  - IT-Tools:
+      icon: sh-it-tools.png
+      href: https://tools.mydomain.com
+      description: IT Tools
+  - PDF Tools:
+      icon: sh-stirling-pdf.png
+      href: https://pdftools.mydomain.com
+      description: PDF Tools
+  - n8n:
+      icon: sh-n8n.png
+      href: https://n8n.mydomain.com
+      description: n8n Automation
+
+- File Sharing:
+  - Filebrowser:
+      icon: sh-file-browser.png
+      href: https://filebrowser.mydomain.com
+      description: Access Files
+  - String-Is:
+      icon: pastey.png
+      href: https://paste.mydomain.com
+      description: Code Paste
+  - Project Send:
+      icon: sh-projectsend.png
+      href: https://send.mydomain.com
+      description: File Share
+
+- Media:
+  - AudioBookShelf:
+      icon: sh-audiobookshelf.png
+      href: https://books.mydomain.com
+      description: Audio Books
+
+
+- Fun:
+  - Wordle:
+      icon: warpgate.png
+      href: https://wordle.mydomain.com
+      description: Wordle
+
+- Infrastructure:
+  - Authentik:
+      icon: sh-authentik.png
+      href: https://auth.mydomain.com
+      description: Authentication
+  - Traefik:
+      icon: sh-traefik.png
+      href: https://traefik.mydomain.com
+      description: Reverse Proxy
+  - Dozzle:
+      icon: sh-dozzle.png
+      href: https://dozzle.mydomain.com
+      description: Docker Log Viewer
+  - UptimeKuma:
+      icon: sh-uptime-kuma.png
+      href: https://uptime.mydomain.com
+      description: Monitoring
+  - Apprise:
+      icon: sh-apprise.png
+      href: https://apprise.mydomain.com
+      description: Notification Manager

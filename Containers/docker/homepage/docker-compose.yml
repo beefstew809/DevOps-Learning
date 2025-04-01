@@ -1,0 +1,34 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:v1.1.1
+    container_name: homepage
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    networks:
+      - proxy
+      - socket_proxy
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      HOMEPAGE_ALLOWED_HOSTS: $DOMAINNAME_1
+      # HOMEPAGE_VAR_AUTHENTIK_KEY: ${HOMEPAGE_VAR_AUTHENTIK_KEY}
+      # HOMEPAGE_VAR_HOMEASSISTANT_KEY: ${HOMEPAGE_VAR_HOMEASSISTANT_KEY}
+      # HOMEPAGE_VAR_PROXMOX_USERNAME: ${HOMEPAGE_VAR_PROXMOX_USERNAME}
+      # HOMEPAGE_VAR_PROXMOX_PASSWORD: ${HOMEPAGE_VAR_PROXMOX_PASSWORD}
+    # ports:
+    #   - 3333:3000
+    volumes:
+      - /$DOCKERDIR/homepage/config:/app/config
+      # - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    labels:
+      #Traefik
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.homepage-rtr.entrypoints=websecure"
+      - "traefik.http.routers.homepage-rtr.rule=Host(`$DOMAINNAME_1`) || Host(`www.$DOMAINNAME_1`)"
+      # Middlewares
+      - "traefik.http.routers.homepage-rtr.middlewares=chain-authentik-proxy-auth@file"
+      # HTTP Services
+      - "traefik.http.routers.homepage-rtr.service=homepage-svc"
+      - "traefik.http.services.homepage-svc.loadbalancer.server.port=3000"

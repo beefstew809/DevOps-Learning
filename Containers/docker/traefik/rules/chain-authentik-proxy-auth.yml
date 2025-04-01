@@ -1,0 +1,9 @@
+http:
+  middlewares:
+    chain-authentik-proxy-auth:
+      chain:
+        middlewares:
+          - middlewares-rate-limit
+          - middlewares-secure-headers
+          - middlewares-authentik-proxy-auth
+          - middlewares-compress

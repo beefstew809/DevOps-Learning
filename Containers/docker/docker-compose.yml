@@ -1,0 +1,40 @@
+#### Networks ####
+#Don't use port 9090, that is for cockpit
+networks:
+  default:
+    driver: bridge
+  socket_proxy:
+    name: socket_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.150.0/24
+  proxy:
+    name: proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.70.0/23
+  db_net:
+    name: db_net
+    internal: true
+    ipam:
+      config:
+        - subnet: 192.168.75.0/24
+
+secrets:
+  basic_auth_credentials:
+    file: $HOMEDIR/secrets/basic_auth_credentials
+  cf_dns_api_token:
+    file: $HOMEDIR/secrets/cf_dns_api_token
+
+include:
+  - path: socket-proxy/docker-compose.yml   # Port: 2375
+  - path: dozzle/docker-compose.yml   # Port: 8081
+  - path: filebrowser/docker-compose.yml   # Port: 8082
+  - path: homepage/docker-compose.yml   # Port: 3333
+  - path: code-server/docker-compose.yml   # Port: 8443
+  - path: drawio/docker-compose.yml   # Port: 8095
+  - path: uptimekuma/docker-compose.yml   # Port: 3567
+  - path: traefik/docker-compose.yml   # Port: 443
+  - path: authentik/docker-compose.yml   # Port: 9000

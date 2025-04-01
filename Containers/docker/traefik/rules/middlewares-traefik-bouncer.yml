@@ -1,0 +1,15 @@
+http:
+    middlewares:
+        middlewares-bouncer-traefik:
+          plugin:
+            crowdsec-bouncer:
+                crowdseclapikey: "123abc"
+                enabled: "true"
+                # forwardedHeadersTrustedIPs:
+                #     - $CLOUDFLARE_IPS
+                clienttrusteips:
+                    - 192.168.1.0/24
+                crowdseclapischeme: "http"
+                crowdseclapihost: crowdsec:8080
+                crowdsecmode: "none"
+
