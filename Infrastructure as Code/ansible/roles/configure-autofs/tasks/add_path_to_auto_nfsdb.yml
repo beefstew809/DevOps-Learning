@@ -1,0 +1,10 @@
+---
+- name: Add path to /etc/auto.nfsdb
+  blockinfile:
+    path: /etc/auto.nfsdb
+    block: |
+      pictures -fstype=nfs,rw,timeo=100,noatime "{{ unraid_ip }}":/mnt/user/pictures
+      documents -fstype=nfs,rw,timeo=100,noatime "{{ unraid_ip }}":/mnt/user/documents
+      media -fstype=nfs,rw,timeo=100,noatime,nolock "{{ unraid_ip }}":/mnt/user/media
+    backup: yes
+  notify: Restart autofs.service

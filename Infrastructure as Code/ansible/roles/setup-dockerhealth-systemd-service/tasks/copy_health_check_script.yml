@@ -1,0 +1,6 @@
+---
+- name: Copy health check script
+  copy:
+    src: ../external_scripts/docker_health_check.sh
+    dest: /usr/local/bin/docker_health_check.sh
+    mode: "0755"

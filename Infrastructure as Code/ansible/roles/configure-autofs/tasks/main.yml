@@ -1,0 +1,5 @@
+---
+# tasks file for configure-autofs
+- import_tasks: create_auto_nfsdb.yml
+- import_tasks: add_path_to_etc_auto.yml
+- import_tasks: add_path_to_auto_nfsdb.yml

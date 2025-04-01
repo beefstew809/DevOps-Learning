@@ -1,0 +1,38 @@
+---
+# file: group_vars/dockerhosts
+ansible_ssh_private_key_file: ~/.ssh/ansible
+unraid_ip: 192.168.1.9
+ansible_user: ansible
+docker_user: dockeruser
+
+# grog.package
+package_list:
+  - name: bash-completion
+  - name: tmux
+  - name: openssh-server
+  - name: ncdu #Storage lookup tool. Use by running: ncdu /
+  - name: cockpit
+  - name: htop
+  - name: nmon #System Monitoring
+  - name: iftop #Display network traffic and bandwith usage. Run: sudo iftop -i eth0
+  - name: iptraf #Like iftop. Run as sudo
+  - name: mc #midnight commander. Visual shell for file browsing
+  # - name: neofetch
+  - name: nano
+  - name: rsync
+  - name: tree
+  - name: wget
+  - name: git
+  - name: curl
+  - name: apt-transport-https
+  - name: ca-certificates
+  - name: software-properties-common
+  - name: python3-pip
+  - name: virtualenv
+  - name: python3-setuptools
+  - name: autofs
+  - name: nfs-common
+  # - name: webmin #Need to configure repository first
+  - name: yamllint
+  # - name: qemu-guest-agent #for proxmox and other qemu based systems
+  

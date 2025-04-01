@@ -1,0 +1,7 @@
+---
+
+- include_tasks: "{{ package_manager }}"
+  with_first_found:
+    - "package-{{ ansible_pkg_mgr }}.yml"
+  loop_control:
+    loop_var: package_manager

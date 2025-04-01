@@ -1,0 +1,10 @@
+[Unit]
+Description=Docker Health Check Service
+
+[Service]
+ExecStart=/bin/bash -c 'cd /usr/local/bin/ && sed -i "s/{{ docker_user }}/$user/" ./docker_health_check.sh'
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=default.target

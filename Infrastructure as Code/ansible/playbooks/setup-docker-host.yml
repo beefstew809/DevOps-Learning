@@ -1,0 +1,24 @@
+---
+#setup-docker-host.yml playbook
+- name: Docker System Setup
+  hosts: dockerhosts
+  vars_files: 'vault.yml'
+  become: true
+
+  tasks: 
+    - name: Set Hostname of System
+      ansible.builtin.hostname:
+        name: "{{ hostname }}"
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+
+  roles:
+    - GROG.package #package_list must be defined in the group_vars folder
+    - geerlingguy.docker
+    - configure-autofs
+    - setup-dockerhealth-systemd-service
+
+#Run with: ansible-playbook -b playbooks/setup-docker-host.yml --limit dockerhosts --ask-vault-pass
+

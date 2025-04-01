@@ -1,0 +1,6 @@
+---
+- name: Configure Autofs
+  hosts: dockerhosts
+  become: true
+  roles:
+    - configure-autofs

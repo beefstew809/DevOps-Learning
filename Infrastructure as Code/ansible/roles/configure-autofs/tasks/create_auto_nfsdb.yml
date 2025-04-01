@@ -1,0 +1,8 @@
+---
+- name: Create auto.nfsdb file
+  file:
+    path: /etc/auto.nfsdb
+    state: touch
+    owner: root
+    group: root
+    mode: "0644"

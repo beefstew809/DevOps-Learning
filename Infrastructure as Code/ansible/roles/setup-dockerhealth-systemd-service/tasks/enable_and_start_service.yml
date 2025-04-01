@@ -1,0 +1,6 @@
+---
+- name: Enable and start the service
+  ansible.builtin.systemd:
+    name: docker-health-check
+    state: started
+    enabled: yes

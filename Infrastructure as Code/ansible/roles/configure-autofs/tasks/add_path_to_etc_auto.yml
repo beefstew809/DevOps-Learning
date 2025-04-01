@@ -1,0 +1,7 @@
+---
+- name: Add path to /etc/auto.master
+  lineinfile:
+    dest: /etc/auto.master
+    line: "/mnt/nfs /etc/auto.nfsdb --timeout=0 --browse"
+    state: present
+    backup: yes

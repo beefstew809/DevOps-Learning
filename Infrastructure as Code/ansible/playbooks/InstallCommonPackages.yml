@@ -1,0 +1,5 @@
+---
+- name: Install packages
+  hosts: dockerhosts
+  roles:
+    - GROG.package #package_list must be defined in the group_vars folder

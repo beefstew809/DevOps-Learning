@@ -1,0 +1,5 @@
+---
+# tasks file for setup-dockerhealth-systemd-service
+- import_tasks: copy_health_check_script.yml
+- import_tasks: create_systemd_service.yml
+- import_tasks: enable_and_start_service.yml

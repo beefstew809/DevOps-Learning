@@ -1,0 +1,37 @@
+---
+- name: Configure Autofs
+  hosts: dockerhosts
+  become: true
+  tasks: 
+    - name: Add path to /etc/auto.master
+      lineinfile:
+        dest: /etc/auto.master
+        line: "/mnt/nfs /etc/auto.nfsdb --timeout=0 --browse"
+        state: present
+        backup: yes
+
+    - name: Create auto.nfsdb file
+      file:
+        path: /etc/auto.nfsdb
+        state: touch
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Add path to /etc/auto.nfsdb
+      lineinfile:
+        dest: /etc/auto.nfsdb
+        line: "{{ item }}"
+        with_items:
+          - 'pictures -fstype=nfs,rw,timeo=100,noatime "{{ unraid_ip }}":/mnt/user/pictures'
+          - 'documents -fstype=nfs,rw,timeo=100,noatime "{{ unraid_ip }}":/mnt/user/documents'
+          - 'media -fstype=nfs,rw,timeo=100,noatime,nolock "{{ unraid_ip }}":/mnt/user/media'
+        state: present
+        backup: yes
+        notify: Restart autofs.service
+
+  handlers:
+    - name: Restart autofs.service
+      ansible.builtin.systemd:
+        name: autofs.service
+        state: restarted

@@ -1,0 +1,20 @@
+---
+- name: Update Docker images
+  hosts: dockerhosts
+  become: yes
+  tasks:
+    - name: Pull Docker images
+      docker_compose:
+        project_src: "{{ dockerpath }}"
+        pull: yes
+
+    - name: Recreate and build Docker containers
+      docker_compose:
+        project_src: "{{ dockerpath }}"
+        force_recreate: yes
+        build: yes
+
+    - name: Prune unused Docker images
+      docker_image_prune:
+        filters:
+          dangling: yes
