@@ -85,9 +85,11 @@ jobs:
         run: |
           ssh -o "StrictHostKeyChecking no" user@host "
             cd ~/docker/
+            # Better to use a credential store. This method puts token in ~/.docker/config.json
             echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login --username '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
             docker compose pull ${{ steps.check-renovate.outputs.service_name }}
             docker compose up --force-recreate --build -d ${{ steps.check-renovate.outputs.service_name }}
+            docker logout
             exit
           "
 
