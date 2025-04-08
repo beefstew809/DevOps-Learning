@@ -29,12 +29,12 @@ secrets:
     file: $HOMEDIR/secrets/cf_dns_api_token
 
 include:
-  - path: socket-proxy/docker-compose.yml   # Port: 2375
-  - path: dozzle/docker-compose.yml   # Port: 8081
-  - path: filebrowser/docker-compose.yml   # Port: 8082
-  - path: homepage/docker-compose.yml   # Port: 3333
-  - path: code-server/docker-compose.yml   # Port: 8443
-  - path: drawio/docker-compose.yml   # Port: 8095
-  - path: uptimekuma/docker-compose.yml   # Port: 3567
-  - path: traefik/docker-compose.yml   # Port: 443
-  - path: authentik/docker-compose.yml   # Port: 9000
+  - path: socket-proxy/compose.yml   # Port: 2375
+  - path: dozzle/compose.yml   # Port: 8081
+  - path: filebrowser/compose.yml   # Port: 8082
+  - path: homepage/compose.yml   # Port: 3333
+  - path: code-server/compose.yml   # Port: 8443
+  - path: drawio/compose.yml   # Port: 8095
+  - path: uptimekuma/compose.yml   # Port: 3567
+  - path: traefik/compose.yml   # Port: 443
+  - path: authentik/compose.yml   # Port: 9000
