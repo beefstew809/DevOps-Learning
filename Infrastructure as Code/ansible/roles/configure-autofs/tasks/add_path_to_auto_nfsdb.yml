@@ -1,6 +1,6 @@
 ---
 - name: Add path to /etc/auto.nfsdb
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/auto.nfsdb
     block: |
       pictures -fstype=nfs,rw,timeo=100,noatime "{{ unraid_ip }}":/mnt/user/pictures

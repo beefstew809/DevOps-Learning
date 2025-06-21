@@ -1,6 +1,6 @@
 ---
 - name: Create auto.nfsdb file
-  file:
+  ansible.builtin.file:
     path: /etc/auto.nfsdb
     state: touch
     owner: root

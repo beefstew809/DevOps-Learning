@@ -4,14 +4,14 @@
   become: true
   tasks: 
     - name: Add path to /etc/auto.master
-      lineinfile:
+      ansible.builtin.lineinfile:
         dest: /etc/auto.master
         line: "/mnt/nfs /etc/auto.nfsdb --timeout=0 --browse"
         state: present
         backup: yes
 
     - name: Create auto.nfsdb file
-      file:
+      ansible.builtin.file:
         path: /etc/auto.nfsdb
         state: touch
         owner: root
@@ -19,7 +19,7 @@
         mode: "0644"
 
     - name: Add path to /etc/auto.nfsdb
-      lineinfile:
+      ansible.builtin.lineinfile:
         dest: /etc/auto.nfsdb
         line: "{{ item }}"
         with_items:
