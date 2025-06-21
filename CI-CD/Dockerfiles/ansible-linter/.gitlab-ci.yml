@@ -1,0 +1,49 @@
+stages:
+  - lint
+  - build
+
+# Define secrets in vault or Gitlab secrets
+# REGISTRY_USERNAME, REGISTRY_PASSWORD
+
+variables:
+  REGISTRY: registry.example.com/your-namespace # Registry TBD
+
+.lint_template: &lint_template
+  stage: lint
+  image: ghcr.io/hadolint/hadolint:2.12.0
+  scripts:
+    - cd $DOCKERFILEDIR
+    - hadolint Dockerfile
+  tags:
+    - podman-vm
+
+lint-ansible-linter:
+  <<: *lint_template
+  variables:
+    DOCKERFILEDIR: ansible-linter
+  rules:
+    - changes:
+      - ansible-linter/Dockerfile
+      - ansible-linter/requirements.txt
+
+.build_template: &build_template
+  stage: build
+  image: quay.io/podman/stable:v5.5.1
+  scripts:
+    - cd $DOCKERFILEDIR
+    - echo $REGISTRY_PASSWORD | podman login $REGISTRY --username $REGISTRY_USERNAME --password-stdin
+    - podman build -t $REGISTRY/tooling/${DOCKERFILEDIR}:${CI_COMMIT_SHORT_SHA} .
+    - podman tag $REGISTRY/tooling/${DOCKERFILEDIR}:${CI_COMMIT_SHORT_SHA} $REGISTRY/tooling/${DOCKERFILEDIR}:latest
+    - podman push $REGISTRY/tooling/${DOCKERFILEDIR}:${CI_COMMIT_SHORT_SHA} -f=oci
+    - podman push $REGISTRY/tooling/${DOCKERFILEDIR}:latest -f=oci
+  tags:
+    - podman-vm
+
+build-ansible-linter:
+  <<: *build_template
+  variables:
+    DOCKERFILEDIR: ansible-linter
+  rules:
+    - changes:
+      - ansible-linter/Dockerfile
+      - ansible-linter/requirements.txt
