@@ -1,0 +1,103 @@
+stages:
+  - lint
+  - build
+  - push
+
+# Define secrets in vault or Gitlab secrets
+# REDHAT_USER, REDHAT_PASS, REGISTRY_USERNAME, REGISTRY_PASSWORD
+# REDHAT_USER and REDHAT_PASS are obtained from AAP
+
+variables:
+  REGISTRY: registry.example.com/your-namespace   # Registry TBD
+
+.lint_template: &lint_template
+  stage: lint
+  image: python:3.11 #Create a new image with yamllint
+  # image: $REGISTRY/tooling/ansible-linter:latest # Better to add tagged version
+  scripts:
+    - pip install yamllint # Remove if using ansible-linter image
+    - yamllint $EE_DIR/execution-envrionment.yml
+  tags:
+    - podman-vm
+
+lint-vmware:
+  <<: *lint_template
+  variables:
+    EE_DIR: ee-vmware
+  rules:
+    - changes:
+      - ee-vmware/**/* 
+
+lint-windows:
+  <<: *lint_template
+  variables:
+    EE_DIR: ee-windows
+  rules:
+    - changes:
+      - ee-windows/**/*
+
+# Add additional CI actions like credential scanning, container scanning, etc
+
+.build_template: &build_template
+  stage: build
+  image: ghcr.io/ansible/community-ansible-dev-tools:25.5.2
+  tags:
+    - podman-vm
+  script:
+    - cd $EE_DIR
+    - echo $REDHAT_PASS | podman login registry.redhat.io -username $REDHAT_USER --password-stdin
+    - echo $REGISTRY_PASSWORD | podman login $REGISTRY --username $REGISTRY_USERNAME --password-stdin
+    - ansible-builder build --tag $REGISTRY/{$EE_NAME}:${CI_COMMIT_SHORT_SHA}
+    - podman logout registry.redhat.io
+    - podman logout $REGISTRY
+  artifacts:
+    paths:
+      - $EE_DIR/context
+      - $EE_DIR/ansible-builder.log
+    expire_in: 1 week
+
+build-vmware:
+  <<: *build_template
+  variables: 
+    EE_DIR: ee-vmware
+  rules:
+    - changes:
+      - ee-vmware/**/*
+
+build-windows:
+  <<: *build_template
+  variables:
+    EE_DIR: ee-windows
+  rules:
+    - changes:
+      - ee-windows/**/*
+
+.push_template: &push_template
+  stage: push
+  image: quay.io/podman/stable:v5.5.1
+  tags:
+    - podman-vm
+  script:
+    - echo $REDHAT_PASS | podman login registry.redhat.io -username $REDHAT_USER --password-stdin
+    - echo $REGISTRY_PASSWORD | podman login $REGISTRY --username $REGISTRY_USERNAME --password-stdin
+    - podman push $REGISTRY/{$EE_NAME}:${CI_COMMIT_SHORT_SHA}
+    - podman logout registry.redhat.io
+    - podman logout $REGISTRY
+
+push-vmwares:
+  <<: *push_template
+  variables:
+    EE_NAME: ee-vmwares
+  needs: [build-vmwares]
+  rules:
+    - changes:
+        - ee-vmwares/**/*
+
+push-windows:
+  <<: *push_template
+  variables:
+    EE_NAME: ee-windows
+  needs: [build-windows]
+  rules:
+    - changes:
+        - ee-windows/**/*

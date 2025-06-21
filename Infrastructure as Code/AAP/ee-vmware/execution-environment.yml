@@ -1,0 +1,41 @@
+---
+version: 3
+
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-25/ee-supported-rhel8:1.0.0-1032
+
+dependencies:
+  galaxy:
+    collections:
+      - name: community.vmware
+        version: 5.7.0
+      - name: vmware.vmware
+        version: 2.1.0
+      - name: vmware.vmware_rest
+        version: 4.7.0
+      - name: community.general
+        version: 10.7.0
+      # - type: git
+        # name: cloud.vmware_ops
+      - name: ansible.utils
+        version: 6.0.0
+      - name: ansible.posix
+        version: 2.0.0
+      - name: ansible.scm
+        version: 3.0.0
+      - name: ansible.netcommon
+        version: 8.0.0
+  python:
+    - pyVmomi==8.0.3.0.1
+    - vmware-vcenter==8.0.3.0
+    - vmware-vapi-common-client==2.52.0
+    - aiohttp==3.12.12
+    - jmespath==1.0.1
+    - vmware-vapi-runtime==2.52.0
+    - netaddr==1.3.0
+    - requests==2.32.4
+    - ipaddress==1.0.23
+    - dnspython==2.7.0
+    - pysnow==0.7.17
+    # - git+https://github.com/vmware/vsphere-automation-sdk-python.git
