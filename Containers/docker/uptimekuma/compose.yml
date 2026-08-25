@@ -2,7 +2,7 @@ services:
   #https://www.youtube.com/watch?v=tIazVdhsSqQ
   #Good examples beyond the simple basics
   uptimekuma:
-    image: louislam/uptime-kuma:1.23.16-alpine
+    image: louislam/uptime-kuma:1.23.17-alpine@sha256:9842072171d2fd7f7c7436227232a7639775d5a3847c0153e732368234348fc0
     container_name: uptimekuma
     networks:
       - proxy
