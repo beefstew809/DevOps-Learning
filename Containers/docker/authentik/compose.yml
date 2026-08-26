@@ -23,7 +23,7 @@ services:
       - $DOCKERDIR/.env
   
   authentik-redis:
-    image: docker.io/library/redis:alpine
+    image: docker.io/library/redis:alpine@sha256:becdda6c7f4b3fb42e42fd7f120bbf5c54c4caaaf16f26da24e4563d2c1f0576
     container_name: authentik-redis
     command: --save 60 1 --loglevel warning
     security_opt:
