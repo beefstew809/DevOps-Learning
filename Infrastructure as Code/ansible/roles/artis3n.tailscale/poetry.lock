@@ -16,25 +16,21 @@ ansible-core = ">=2.16.1,<2.17.0"
 
 [[package]]
 name = "ansible-compat"
-version = "4.1.11"
+version = "26.6.0"
 description = "Ansible compatibility goodies"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 files = [
-    {file = "ansible-compat-4.1.11.tar.gz", hash = "sha256:b3e9f9d7c3a1ce6222de444e9dc6fece7eba70ac64f2a0befdc4e2d542018b4a"},
-    {file = "ansible_compat-4.1.11-py3-none-any.whl", hash = "sha256:74a91807808a39af48ab6595811b9340d1458db26b138362f48bf39292190705"},
+    {file = "ansible_compat-26.6.0-py3-none-any.whl", hash = "sha256:739c4d10c791000c4b353f5e725e9ebafb6384dbeb00b94c7c8ac3ee2c172337"},
+    {file = "ansible_compat-26.6.0.tar.gz", hash = "sha256:ad00d3cff84a961165a7dd90f175fd9a4584e2e602e9d8af2062ce7c479dd350"},
 ]
 
 [package.dependencies]
-ansible-core = ">=2.12"
+ansible-core = ">=2.16"
 jsonschema = ">=4.6.0"
-packaging = "*"
-PyYAML = "*"
+packaging = ">=22.0"
+pyyaml = ">=6.0.1"
 subprocess-tee = ">=0.4.1"
-
-[package.extras]
-docs = ["argparse-manpage", "black", "mkdocs-ansible[lock] (>=0.1.2)"]
-test = ["coverage", "pip-tools", "pytest (>=7.2.0)", "pytest-mock", "pytest-plus (>=0.6.1)"]
 
 [[package]]
 name = "ansible-core"
@@ -357,23 +353,6 @@ files = [
 
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
-
-[[package]]
-name = "click-help-colors"
-version = "0.9.4"
-description = "Colorization of help messages in Click"
-optional = false
-python-versions = "*"
-files = [
-    {file = "click-help-colors-0.9.4.tar.gz", hash = "sha256:f4cabe52cf550299b8888f4f2ee4c5f359ac27e33bcfe4d61db47785a5cc936c"},
-    {file = "click_help_colors-0.9.4-py3-none-any.whl", hash = "sha256:b33c5803eeaeb084393b1ab5899dc5476c7196b87a18713045afe76f840b42db"},
-]
-
-[package.dependencies]
-click = ">=7.0,<9"
-
-[package.extras]
-dev = ["mypy", "pytest"]
 
 [[package]]
 name = "colorama"
@@ -701,33 +680,27 @@ files = [
 
 [[package]]
 name = "molecule"
-version = "6.0.3"
+version = "26.8.0"
 description = "Molecule aids in the development and testing of Ansible roles"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 files = [
-    {file = "molecule-6.0.3-py3-none-any.whl", hash = "sha256:8e5d7a7841f9ed5dd26878d24951ec030b86f780aca17ffc509db8076f42de3d"},
-    {file = "molecule-6.0.3.tar.gz", hash = "sha256:d2a881062fcc5ef1e08c1e5127c04354d2c95171955e270bd82b3fbfef72d3b0"},
+    {file = "molecule-26.8.0-py3-none-any.whl", hash = "sha256:69a2a07dad27d362b9209024c9d3f0daac29da6637945fec5098deea448e3b52"},
+    {file = "molecule-26.8.0.tar.gz", hash = "sha256:506a0a0416683f4e404a42ce8c56a980cd93b7c802258222c1a9736b0f4ec37c"},
 ]
 
 [package.dependencies]
-ansible-compat = ">=4.1.8"
-ansible-core = ">=2.12.10"
+ansible-compat = ">=25.1.4"
+ansible-core = ">=2.15.0,<2.17.dev0 || >=2.18.dev0"
 click = ">=8.0,<9"
-click-help-colors = ">=0.9"
 enrich = ">=1.2.7"
-Jinja2 = ">=2.11.3"
+jinja2 = ">=2.11.3"
 jsonschema = ">=4.9.1"
-packaging = "*"
+packaging = ">=23.2"
 pluggy = ">=0.7.1,<2.0"
-PyYAML = ">=5.1"
+pyyaml = ">=5.1"
 rich = ">=9.5.1"
 wcmatch = ">=8.1.2"
-
-[package.extras]
-docs = ["linkchecker (==10.2.1)", "mkdocs-ansible[lock] (>=0.2.0)", "pipdeptree (>=2.4.0)"]
-test = ["ansi2html (>=1.8.0)", "ansible-lint (>=6.12.1)", "check-jsonschema", "coverage (>=7.0.3)", "filelock (>=3.9.0)", "pexpect (>=4.8.0,<5)", "pytest (>=7.2.0)", "pytest-mock (>=3.10.0)", "pytest-plus (>=0.4.0)", "pytest-xdist (>=3.1.0)"]
-testinfra = ["pytest-testinfra (>=8.1.0)"]
 
 [[package]]
 name = "molecule-plugins"
@@ -1348,4 +1321,4 @@ dev = ["doc8", "flake8", "flake8-import-order", "rstcheck[sphinx]", "sphinx"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "9e12844907d1686c5bc8b467fc00db74c48247df9f3184beef8cd1271ef76746"
+content-hash = "f9741b6dc03e61ce1f01fb4ff154f8db10f8ded268388ac1ce2cb932dcd45fb1"
