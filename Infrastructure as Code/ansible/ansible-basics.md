@@ -25,14 +25,29 @@ Edit group_vars and host_vars as needed.
 - https://github.com/GROG/ansible-role-package
 - https://github.com/GROG/ansible-role-fqdn
 - https://github.com/geerlingguy/ansible-role-docker
+Declare them in `requirements.yml` with a pinned version rather than installing
+them one at a time, so the versions are recorded in git:
+
+```yaml
+roles:
+  - name: artis3n.tailscale
+    version: v4.4.1
+  - name: geerlingguy.docker
+    version: 7.0.2
 ```
-cd AnsibleServer
-ansible-galaxy install diodonfrost.terraform -p roles/
-ansible-galaxy role install artis3n.tailscale -p roles/
-ansible-galaxy role install GROG.package -p roles/
-ansible-galaxy role install GROG.fqdn -p roles/
-ansible-galaxy role install geerlingguy.docker -p roles/
+
+Then install:
+
+```bash
+ansible-galaxy install -r requirements.yml
 ```
+
+Add `--force` to re-install after bumping a version.
+
+Note: do **not** install with `-p roles/`. That writes the downloaded role into the
+repo, which commits someone else's code, records no version, and makes dependency
+bots open PRs against upstream internals. Let them install to the default
+`roles_path` (`~/.ansible/roles`) and keep only locally written roles in `roles/`.
 
 ## Ansible Vault
 ```
