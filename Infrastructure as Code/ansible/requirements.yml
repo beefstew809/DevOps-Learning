@@ -1,0 +1,42 @@
+---
+# Galaxy dependencies for the playbooks in this directory.
+#
+# Install everything before running a playbook:
+#
+#   ansible-galaxy install -r requirements.yml
+#
+# Roles land in ~/.ansible/roles (or whatever `roles_path` in ansible.cfg
+# says), which is why they are NOT committed to this repo. See roles/README.md.
+
+collections:
+  # docker_container, docker_compose_v2, docker_network, ...
+  - name: community.docker
+    version: ">=3.4.0"
+  # timezone, ufw, filesystem, and assorted helpers
+  - name: community.general
+    version: ">=8.0.0"
+
+roles:
+  # Tailscale install + `tailscale up` with an auth or OAuth key.
+  # Used by playbooks/install-tailscale.yml
+  - name: artis3n.tailscale
+    version: v4.4.1
+
+  # Docker CE repo, engine, and compose plugin.
+  # Used by playbooks/install-docker.yml and playbooks/setup-docker-host.yml
+  - name: geerlingguy.docker
+    version: 7.0.2
+
+  # Installs Terraform from the HashiCorp repo.
+  - name: diodonfrost.terraform
+    version: 1.6.1
+
+  # Installs a list of packages from the `package_list` var.
+  # Used by playbooks/InstallCommonPackages.yml and setup-docker-host.yml
+  # `package_list` must be defined in group_vars.
+  - name: GROG.package
+    version: v1.4.0
+
+  # Sets the system hostname and FQDN.
+  - name: GROG.fqdn
+    version: v1.0.2
