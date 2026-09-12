@@ -1,0 +1,26 @@
+# Traefik runtime state. acme.json holds the ACME account key and every issued
+# certificate's private key; the log files are per-host runtime output. Neither
+# belongs in git. Traefik creates both on first start.
+Containers/docker/traefik/acme/acme.json
+Containers/docker/traefik/logs/
+
+# Ansible Galaxy roles and collections are declared in
+# "Infrastructure as Code/ansible/requirements.yml" and installed on demand.
+# Only locally written roles are tracked. See that directory's roles/README.md.
+Infrastructure as Code/ansible/roles/*/meta/.galaxy_install_info
+
+# Ansible
+*.retry
+vault-password
+.vault_pass
+
+# Secrets and local overrides
+.env
+*.env
+!.env.example
+*.pem
+*.key
+
+# Editor / OS noise
+.DS_Store
+*.swp
