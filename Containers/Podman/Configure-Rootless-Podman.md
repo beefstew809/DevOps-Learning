@@ -1,6 +1,12 @@
 # Configure Podman
 
-Podman is a container management tool similar to Docker, but it doesn't require a daemon process and runs containers with rootless capabilities by default, making it more secure. RHEL has adopted Podman as its native container engine, phasing out Docker, and for compatibility purposes, RHEL systems now map the 'docker' command as an alias to 'podman'. This allows you to use familiar Docker commands while actually leveraging Podman's enhanced security model and RHEL integration.
+Podman is a container management tool similar to Docker, but it doesn't require a daemon process and runs containers rootless by default, making it more secure. RHEL has adopted Podman as its native container engine and no longer ships Docker.
+
+Docker commands carry over, but the `docker` name does not appear by itself. It comes from the optional **`podman-docker`** package, which installs a `/usr/bin/docker` shim. On a stock host `docker` does not exist at all:
+
+```bash
+sudo dnf install podman-docker   # only if you want the alias
+```
 
 This guide will show how to setup rootless Podman
 
@@ -41,7 +47,33 @@ pasta, using the package name passt, is the default since Podman 5.0
 
 `sudo dnf install passt`
 
-If you need to change the default, change the [network] section of /usr/share/containers/containers.conf, /etc/containers/containers.conf, and /etc/containers/containers.conf.d/*.conf
+If you need to change the default, set `default_rootless_network_cmd` in the
+`[network]` section. **Do not edit `/usr/share/containers/containers.conf`** — that
+file is owned by the package and your changes are lost on the next update. It is the
+documented reference for available settings, nothing more.
+
+Write to one of these instead, in increasing precedence:
+
+| File | Scope |
+| --- | --- |
+| `/etc/containers/containers.conf` | system-wide override |
+| `/etc/containers/containers.conf.d/*.conf` | system-wide drop-in, preferred |
+| `~/.config/containers/containers.conf` | this user only — the right place for rootless |
+
+A drop-in only needs the keys you are changing:
+
+```ini
+# ~/.config/containers/containers.conf
+[network]
+default_rootless_network_cmd = "slirp4netns"
+```
+
+Confirm what is actually in effect rather than assuming:
+
+```bash
+podman info --format '{{.Host.NetworkBackend}}'
+podman info --format '{{.Host.RootlessNetworkCmd}}'
+```
 
 ## Configure subuid and subgid
 https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md#etcsubuid-and-etcsubgid-configuration
@@ -123,12 +155,29 @@ Note that we don't use sudo; run this as the user so that you do not interrupt o
 
 To allow Podman to run as a service for your user (enabling features like the REST API and better integration with tools), you need to enable and start the podman.socket user unit.
 
-```
-systemctl --user --now enable podman.socket
-systemctl --user --now start podman.socket
+```bash
+systemctl --user enable --now podman.socket
 ```
 
-**Note**: Run these commands as the user who will be running containers (not as root, and not with sudo). If you want to enable Podman for another user, switch to that user first.
+`--now` already starts the unit, so a separate `start` is redundant (and `--now` does
+nothing on `start`).
+
+Verify it:
+
+```bash
+systemctl --user status podman.socket
+podman info --format '{{.Host.RemoteSocket.Path}}'
+```
+
+**Note**: Run this as the user who will be running containers (not as root, and not with sudo). If you want to enable Podman for another user, switch to that user first.
+
+This socket is only needed by things that speak the **Docker API** — Docker Compose,
+Testcontainers, a CI runner configured with `DOCKER_HOST`, Dozzle. Plain `podman`
+commands do not use it and work without it. Point clients at it with:
+
+```bash
+export DOCKER_HOST=unix:///run/user/$(id -u)/podman/podman.sock
+```
 
 ## Allow Containers to Persist Unattended (Enable Linger)
 
@@ -160,19 +209,42 @@ By default, user services (like rootless Podman containers) stop when you log ou
 | podman network inspect <network> | Inspect network details |
 | podman pod ls | List pods |
 | podman pod create | Create a pod |
-| podman system prune -a | Remove unused containers, images, and networks |
+| podman system prune -a | Remove unused containers, images, and networks. Add --volumes to include volumes, which it otherwise keeps. |
 
 ### Advanced (Rootful Only)
 | Command | Description |
 | ----------- | ----------- |
 | sudo podman container checkpoint <container> | Save the state of a running container (rootful only) |
 | sudo podman container restore <container> | Restore a container from a checkpoint (rootful only) |
-| sudo podman container checkpoint <container> -a /tmp/checkpoint.tar.zstd | Export a checkpoint for migration (rootful only) |
-| sudo podman container restore -i /tmp/checkpoint.tar/zstd | Restore a container from an exported checkpoint (rootful only) |
+| sudo podman container checkpoint <container> -e /tmp/checkpoint.tar.gz | Export a checkpoint for migration (rootful only) |
+| sudo podman container restore -i /tmp/checkpoint.tar.gz | Restore a container from an exported checkpoint (rootful only) |
 
 ### Tips
 - For most day-to-day tasks, you do not need sudo unless working with checkpoint/restore or managing containers as root.
 - Use container ID or name as required by each command.
+- Checkpoint/restore really is root-only. Attempting it rootless fails immediately
+  with `Error: checkpointing a container requires root`, because CRIU needs
+  capabilities a user namespace does not grant.
+
+## Verifying the setup
+
+```bash
+# rootless? Should print "rootless"
+podman info --format '{{if .Host.Security.Rootless}}rootless{{else}}ROOTFUL{{end}}'
+
+# the subuid/subgid range podman resolved for this user
+podman info --format '{{.Host.IDMappings}}'
+
+# smoke test: the container's root should map to your subordinate range
+podman run --rm docker.io/library/alpine:latest id
+```
+
+If `podman info` complains about `/etc/subuid`, the range is missing or overlapping —
+recheck the section above, then run `podman system migrate`.
+
+**`podman system reset` is the blunt instrument**: it deletes all containers, images,
+volumes, networks and configuration for the current user. It is the fix for genuinely
+corrupted storage, not a troubleshooting step.
 
 ## Useful Links
 - https://www.redhat.com/en/blog/rootless-podman-user-namespace-modes
