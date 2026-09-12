@@ -2,7 +2,13 @@
 
 ## Introduction
 
-Podman is a container management tool similar to Docker, but it doesn't require a daemon process and runs containers with rootless capabilities by default, making it more secure. RHEL has adopted Podman as its native container engine, phasing out Docker, and for compatibility purposes, RHEL systems now map the 'docker' command as an alias to 'podman'. This allows you to use familiar Docker commands while actually leveraging Podman's enhanced security model and RHEL integration.
+Podman is a container management tool similar to Docker, but it doesn't require a daemon process and runs containers rootless by default, making it more secure. RHEL has adopted Podman as its native container engine and no longer ships Docker.
+
+Docker commands can be reused, but not automatically: the `docker` name comes from the optional **`podman-docker`** package, which installs a `/usr/bin/docker` shim script. It is not installed by default, so on a stock host `docker` simply does not exist. Install it if you want the alias:
+
+```bash
+sudo dnf install podman-docker
+```
 
 In production deployments, manual `podman run` commands become unsustainable. Podman offers Quadlet – a declarative IaC solution using systemd unit files – for managing containers, storage, networks, and pods as version-controlled code. This ensures reproducibility, scalability, and auditability.
 
@@ -17,6 +23,77 @@ Podman leverages user namespaces to isolate container UIDs/GIDs from the host. T
 Podman can be used in conjunction with SELinux (for RHEL-based systems) to enforce mandatory access control. One thing we do is label volumes and files correctly (e.g. using :Z or :z volume mount options) to maintain SELinux context.
 
 Minimal container images should be utilized to reduce the attack surface. Additionally, packages inside the container should be limited to only what is needed.
+
+### Hardening a Quadlet container
+
+Defaults worth applying to anything long-running. Each of these is a Quadlet key:
+
+```ini
+[Container]
+Image=docker.io/library/nginx:latest
+
+# Drop every capability, then add back only what the process needs
+DropCapability=all
+AddCapability=NET_BIND_SERVICE
+
+# No privilege escalation via setuid binaries
+NoNewPrivileges=true
+
+# Root filesystem read-only; give writable paths explicitly
+ReadOnly=true
+Tmpfs=/tmp
+Tmpfs=/var/run
+
+# Run as a non-root UID inside the container
+User=1000
+Group=1000
+
+# Pin by digest so the tag cannot move underneath you
+# Image=docker.io/library/nginx@sha256:...
+```
+
+`ReadOnly=true` is the one that most often surfaces a hidden assumption — an image
+that writes to a path you did not expect fails immediately, which is the point.
+
+### Bind mounts and user namespaces
+
+A rootless container's UID 1000 is not your UID 1000; it maps to a subordinate UID on
+the host. So a bind-mounted directory you own may be unwritable inside the container.
+Two ways out:
+
+```ini
+# Map the calling user straight through, so host ownership matches
+UserNS=keep-id
+```
+
+or fix ownership from inside the namespace:
+
+```bash
+podman unshare chown -R 1000:1000 /path/on/host
+```
+
+Plain `chown 1000:1000` from the host sets the wrong owner for the container.
+
+### Keeping images current
+
+```ini
+AutoUpdate=registry
+```
+
+```bash
+systemctl --user enable --now podman-auto-update.timer
+```
+
+`podman auto-update` replaces the container if the registry has a newer digest for
+the tag, and rolls back automatically if the new image fails to start. Check what it
+would do first:
+
+```bash
+podman auto-update --dry-run
+```
+
+Note this is a plain systemd timer, not a generated unit, so `enable` works here —
+unlike the Quadlet services themselves.
 
 ## Podman Run: A Starting Point
 
@@ -97,8 +174,8 @@ Requires=db.service
 Image=docker.io/library/nginx:latest  
 Volume=app-data.volume:/var/www:Z  
 Environment=DB_HOST=db  
-# Port=8080:80 # Not needed since container is part of a pod and this is defined in the pod
-Label=io.containers.autoupdate=registry
+# PublishPort is not set here: the container is in a pod, so ports belong to the pod
+AutoUpdate=registry
 Network=app-network.network
 Pod=app-pod.pod
 
@@ -108,29 +185,43 @@ RestartSec=30
 ```
 Network definition found at ~/.config/containers/systemd/app-network.network
 ```
-[Network]  
-Driver=bridge  
-Subnet=10.88.0.0/24
+[Network]
+Driver=bridge
+Subnet=10.89.0.0/24
 ```
+
+Podman's own default bridge is `10.88.0.0/16`, so a `10.88.0.0/24` here overlaps it.
+Pick a range outside it.
+
 Volume definition found at ~/.config/containers/systemd/app-data.volume
+```ini
+[Volume]
+Driver=local
+Device=%h/volumes/app-data
+Options=bind
+User=1000:1000
 ```
-[Volume]  
-User=1000:1000  
-Options=o=bind  
-```
+
+`Options=` without `Device=` is rejected outright — the generator reports *"key Options can't be used without Device"* and produces no unit.
+
 Pod definition found at ~/.config/containers/systemd/app-pod.pod
+```ini
+[Pod]
+PodName=full-stack-pod
+PublishPort=8080:80
+Network=app-network.network
 ```
-[Pod]  
-Name=full-stack-pod  
-PublishPort=8080:80  
-Network=app-network.network  
-```
+
+`Name=` is not a `[Pod]` key — it must be `PodName=`, or the pod unit is never generated.
+
 ##### Database
 Volume definition found at: ~/.config/containers/systemd/db-data.volume
-```
+```ini
 [Volume]
+Driver=local
+Device=%h/volumes/db-data
+Options=bind
 User=1000:1000
-Options=o=bind
 ```
 Container definition found at: ~/.config/containers/systemd/db.container
 ```
@@ -143,9 +234,7 @@ Volume=db-data.volume:/var/lib/postgresql/data:Z
 Environment=POSTGRES_USER=webapp
 Environment=POSTGRES_PASSWORD=strongpassword
 Environment=POSTGRES_DB=webappdb
-Name=db
-Network=app-network.network
-Port=5432:5432
+ContainerName=db
 Pod=app-pod.pod
 
 [Service]
@@ -155,11 +244,26 @@ RestartSec=30
 Note: We have put secrets directly into a quadlet file which is a bad practice. We have this here for illustrative purposes only. Better practices can be found below. 
 
 #### Deploy Quadlet
-```
+
+Add `[Install] WantedBy=default.target` to each Quadlet file, then:
+
+```bash
 systemctl --user daemon-reload
-systemctl --user enable --now db.service
-systemctl --user enable --now webapp.service 
+systemctl --user start db.service
+systemctl --user start webapp.service
 ```
+
+**Do not try to `enable` these.** Quadlet units are produced by a systemd generator
+at runtime, so there is no file to symlink and the command always fails:
+
+```console
+$ systemctl --user enable --now db.service
+Failed to enable unit: Unit /run/user/1000/systemd/generator/db.service is transient or generated
+```
+
+Start-at-boot comes from `[Install] WantedBy=default.target` in the Quadlet file,
+plus `loginctl enable-linger $USER` so user units survive logout.
+
 Verify deployment:
 ```
 systemctl --user status db.service
@@ -251,7 +355,19 @@ Best practice dictates that secrets should not be stored in plaintext in podman 
 
 ### Podman secrets
 
-Podman natively supports secrets through Podman secrets. They are encrypted by the host's kernel keyring service and can be rotated with `podman secret rotate`
+Podman natively supports secrets through Podman secrets.
+
+Two things to be clear about, both verified against Podman 5.8:
+
+- **They are not encrypted.** The default driver is `file`, which stores the value
+  base64-encoded under `~/.local/share/containers/storage/secrets/`. Anyone who can
+  read that directory can `base64 -d` it. The directory is mode `0700`, so this is
+  better than a password committed to git, but it is not encryption at rest. For
+  actual encryption use the `pass` or `shell` driver, or an external manager.
+- **There is no `podman secret rotate`.** The subcommands are `create`, `exists`,
+  `inspect`, `ls` and `rm`. To change a secret you remove and recreate it, then
+  restart the consuming containers — `podman secret rm` refuses while a container is
+  using it, so stop the unit first.
 
 Example:
 
@@ -265,10 +381,17 @@ rm db_pass.txt  # Remove source file immediately
 # Use in Quadlet file
 [Container]
 Image=docker.io/library/postgres:16
-Secret=db_password,type=env,target=POSTGRES_PASSWORD  # Inject as env var
-# OR
-Secret=db_password,type=mount,target=/run/secrets/db_password  # Mount as file
+
+# Inject as an env var
+Secret=db_password,type=env,target=POSTGRES_PASSWORD
+
+# OR mount as a file — preferred, since env vars show up in podman inspect
+# and in the process environment of anything in that container
+Secret=db_password,type=mount,target=/run/secrets/db_password
 ```
+
+Note the comments are on their own lines. systemd has no inline comments: putting
+`# Inject as env var` after the value makes it part of the value.
 
 ### External Secrets Managers
 
@@ -298,7 +421,24 @@ See https://www.redhat.com/en/blog/multi-container-application-podman-quadlet fo
 
 ## Docker to Podman
 
-More comfortable with docker and docker compose? Podman still offers podman-compose but it is not well supported and often runs into bugs. Instead, you can utilize `podlet` to convert from docker compose or docker run to quadlet files.
+More comfortable with docker and docker compose? Podman ships `podman compose`, a
+thin wrapper that hands the file to an external provider — `docker-compose` if
+installed, otherwise `podman-compose`. It is not a reimplementation, so behaviour
+depends on which provider is present:
+
+```bash
+podman compose up -d          # delegates to the provider
+podman compose version        # shows which provider was picked
+```
+
+For production, convert to Quadlet instead so systemd owns the lifecycle. `podlet`
+generates Quadlet files from a compose file, a `podman run` command, or an existing
+container:
+
+```bash
+podlet compose docker-compose.yml
+podlet podman run -d --name web -p 8080:80 docker.io/library/nginx
+```
 
 See https://github.com/containers/podlet
 
@@ -337,15 +477,15 @@ Kubernetes should be considered when you need:
 | podman network inspect <network> | Inspect network details |
 | podman pod ls | List pods |
 | podman pod create | Create a pod |
-| podman system prune -a | Remove unused containers, images, and networks |
+| podman system prune -a | Remove unused containers, images, and networks. Add --volumes to include volumes, which it otherwise keeps. |
 
 ### Advanced (Rootful Only)
 | Command | Description |
 | ----------- | ----------- |
 | sudo podman container checkpoint <container> | Save the state of a running container (rootful only) |
 | sudo podman container restore <container> | Restore a container from a checkpoint (rootful only) |
-| sudo podman container checkpoint <container> -a /tmp/checkpoint.tar.zstd | Export a checkpoint for migration (rootful only) |
-| sudo podman container restore -i /tmp/checkpoint.tar/zstd | Restore a container from an exported checkpoint (rootful only) |
+| sudo podman container checkpoint <container> -e /tmp/checkpoint.tar.gz | Export a checkpoint for migration (rootful only) |
+| sudo podman container restore -i /tmp/checkpoint.tar.gz | Restore a container from an exported checkpoint (rootful only) |
 
 ### Tips
 - For most day-to-day tasks, you do not need sudo unless working with checkpoint/restore or managing containers as root.
@@ -360,8 +500,9 @@ Kubernetes should be considered when you need:
     - `podman inspect <container name or pod name>`
 - Review systemd service logs
     - `journalctl --user -u <service_name>.service -f`
-- Ensure podman machine is running
-    - `podman machine list`
+- `podman machine` is only relevant on macOS and Windows, where containers run
+  inside a VM. On a Linux host there is no machine and `podman machine list` is
+  empty — that is normal, not a fault.
 
 ## Useful Links
 - https://www.redhat.com/en/blog/rootless-podman-user-namespace-modes
