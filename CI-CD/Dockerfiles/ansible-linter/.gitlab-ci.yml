@@ -10,7 +10,7 @@ variables:
 
 .lint_template: &lint_template
   stage: lint
-  image: ghcr.io/hadolint/hadolint:2.12.0
+  image: ghcr.io/hadolint/hadolint:2.12.0@sha256:30a8fd2e785ab6176eed53f74769e04f125afb2f74a6c52aef7d463583b6d45e
   scripts:
     - cd $DOCKERFILEDIR
     - hadolint Dockerfile
@@ -28,7 +28,7 @@ lint-ansible-linter:
 
 .build_template: &build_template
   stage: build
-  image: quay.io/podman/stable:v5.5.1
+  image: quay.io/podman/stable:v5.5.1@sha256:2fc392d1adf4b15a2159ebe4f3c684cc26602a0fcf2406f5fb88afb3727c9538
   scripts:
     - cd $DOCKERFILEDIR
     - echo $REGISTRY_PASSWORD | podman login $REGISTRY --username $REGISTRY_USERNAME --password-stdin

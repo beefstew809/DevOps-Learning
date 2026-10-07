@@ -55,7 +55,7 @@ Build tooling should not ship to production. Compile in one stage, copy the arti
 clean one:
 
 ```dockerfile
-FROM golang:1.24 AS build
+FROM golang:1.24@sha256:d2d2bc1c84f7e60d7d2438a3836ae7d0c847f4888464e7ec9ba3a1339a1ee804 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod go mod download
@@ -119,7 +119,7 @@ debug with `kubectl debug` or the `:debug` tag variant. See
 
 ```dockerfile
 FROM node:22                # floats — rebuilds are not reproducible
-FROM node:22.11-slim        # better
+FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da        # better
 FROM node:22.11-slim@sha256:1a2b3c...   # exact, what Renovate manages
 ```
 
@@ -298,7 +298,7 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 Use `TARGETARCH` rather than cross-compiling by hand:
 
 ```dockerfile
-FROM --platform=$BUILDPLATFORM golang:1.24 AS build
+FROM --platform=$BUILDPLATFORM golang:1.24@sha256:d2d2bc1c84f7e60d7d2438a3836ae7d0c847f4888464e7ec9ba3a1339a1ee804 AS build
 ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /out/app .
 ```
