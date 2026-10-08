@@ -35,7 +35,7 @@ roles:
   # Used by playbooks/InstallCommonPackages.yml and setup-docker-host.yml
   # `package_list` must be defined in group_vars.
   - name: GROG.package
-    version: v1.4.0
+    version: v1.4.1
 
   # Sets the system hostname and FQDN.
   - name: GROG.fqdn
