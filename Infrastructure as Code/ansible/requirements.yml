@@ -29,7 +29,7 @@ roles:
 
   # Installs Terraform from the HashiCorp repo.
   - name: diodonfrost.terraform
-    version: 1.6.1
+    version: 1.8.1
 
   # Installs a list of packages from the `package_list` var.
   # Used by playbooks/InstallCommonPackages.yml and setup-docker-host.yml
