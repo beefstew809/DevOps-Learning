@@ -41,7 +41,7 @@ services:
       - redis:/data
   
   authentik-server:
-    image: ghcr.io/goauthentik/server:2025.2.3@sha256:845a54b86313cfec16c081dce345a154c771621a330de1d4635a53c24f7295a4
+    image: ghcr.io/goauthentik/server:2025.2.4@sha256:1839674f14911f4e50cf6495caa2de9db0d7a16b5ce46341bcdc37a8a6848c0a
     container_name: authentik-server
     security_opt:
       - no-new-privileges:true
@@ -87,7 +87,7 @@ services:
 
  
   authentik-worker:
-    image: ghcr.io/goauthentik/server:2025.2.3@sha256:845a54b86313cfec16c081dce345a154c771621a330de1d4635a53c24f7295a4
+    image: ghcr.io/goauthentik/server:2025.2.4@sha256:1839674f14911f4e50cf6495caa2de9db0d7a16b5ce46341bcdc37a8a6848c0a
     container_name: authentik-worker
     security_opt:
       - no-new-privileges:true
