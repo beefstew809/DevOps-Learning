@@ -1,7 +1,7 @@
 services:
   # Dozzle - Real-time Docker Log Viewer
   dozzle:
-    image: amir20/dozzle:v8.12.21@sha256:4e4a7ab10dc2db42d401755c780a510072e9b453251529e2457539f9a823400a
+    image: amir20/dozzle:v8.14.12@sha256:0df89c904da71e94a0c9ed3c89a890f01488321b5f10ac1e0c0bedcead9af6e4
     container_name: dozzle
     security_opt:
       - no-new-privileges:true
