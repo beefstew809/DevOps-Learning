@@ -120,7 +120,7 @@ debug with `kubectl debug` or the `:debug` tag variant. See
 ```dockerfile
 FROM node:22                # floats — rebuilds are not reproducible
 FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da        # better
-FROM node:22.11-slim@sha256:1a2b3c...   # exact, what Renovate manages
+FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da   # exact, what Renovate manages
 ```
 
 Digest pinning is what makes a rebuild produce the same base. Renovate updates these
@@ -310,19 +310,19 @@ foreign binary. Without it, BuildKit emulates the target under QEMU, which can b
 
 ```dockerfile
 # syntax=docker/dockerfile:1
-FROM node:22.11-slim@sha256:abc123... AS deps
+FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 
-FROM node:22.11-slim@sha256:abc123... AS build
+FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 COPY . .
 RUN npm run build
 
-FROM node:22.11-slim@sha256:abc123...
+FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da
 ENV NODE_ENV=production
 RUN useradd --system --uid 10001 --no-create-home app
 WORKDIR /app
