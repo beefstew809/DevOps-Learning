@@ -1,7 +1,7 @@
 services:
   # VSCode - VSCode Editing
   vscode: 
-    image: lscr.io/linuxserver/code-server:4.98.2@sha256:64ba095c0f0e019352609bb7beaa4cf06c61c04dfc6b7549156b68beeb80065d
+    image: lscr.io/linuxserver/code-server:4.141.0@sha256:0d590a1a80a36bd2559222ad6e9f69559e962cca003f6f716b62487999d575f5
     container_name: vscode
     security_opt:
       - no-new-privileges:true
