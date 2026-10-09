@@ -1,6 +1,6 @@
 services:
   filebrowser:
-    image: filebrowser/filebrowser:v2.32.3-s6@sha256:38f4ca7ff16ce5791c217a042857f17dbd173516919cd97a35c57ce4736e7bcd
+    image: filebrowser/filebrowser:v2.63.23-s6@sha256:ee4ac79e52966a5f6247f99c7d667c1debfb277a3a61ab829f505aa8f4c74b21
     container_name: filebrowser
     networks:
       - proxy
