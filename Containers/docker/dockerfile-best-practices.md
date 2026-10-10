@@ -17,14 +17,14 @@ So ordering decides rebuild speed: put what rarely changes first, what changes c
 
 ```dockerfile
 # BAD — any source change re-runs npm install
-FROM node:22-slim
+FROM node:22-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392
 WORKDIR /app
 COPY . .
 RUN npm ci
 CMD ["node", "server.js"]
 
 # GOOD — dependencies cached until the manifests change
-FROM node:22-slim
+FROM node:22-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -118,7 +118,7 @@ debug with `kubectl debug` or the `:debug` tag variant. See
 ### Pin properly
 
 ```dockerfile
-FROM node:22                # floats — rebuilds are not reproducible
+FROM node:22@sha256:0e5f906573693feaa1e21057ebdcfdb5bd5021f050b2dc7c9deceb629c7da2a8                # floats — rebuilds are not reproducible
 FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da        # better
 FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da   # exact, what Renovate manages
 ```
