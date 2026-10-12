@@ -20,7 +20,7 @@ roles:
   # Tailscale install + `tailscale up` with an auth or OAuth key.
   # Used by playbooks/install-tailscale.yml
   - name: artis3n.tailscale
-    version: v4.6.0
+    version: v5.0.1
 
   # Docker CE repo, engine, and compose plugin.
   # Used by playbooks/install-docker.yml and playbooks/setup-docker-host.yml
