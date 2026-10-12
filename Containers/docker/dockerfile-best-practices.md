@@ -17,14 +17,14 @@ So ordering decides rebuild speed: put what rarely changes first, what changes c
 
 ```dockerfile
 # BAD — any source change re-runs npm install
-FROM node:22-slim
+FROM node:22-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392
 WORKDIR /app
 COPY . .
 RUN npm ci
 CMD ["node", "server.js"]
 
 # GOOD — dependencies cached until the manifests change
-FROM node:22-slim
+FROM node:22-slim@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -75,13 +75,13 @@ reach the final image — so they are not a vulnerability surface and not a leak
 For interpreted languages the same idea applies to build dependencies:
 
 ```dockerfile
-FROM python:3.13-slim AS build
+FROM python:3.13-slim@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f AS build
 RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev \
  && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-FROM python:3.13-slim
+FROM python:3.13-slim@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f
 COPY --from=build /install /usr/local
 COPY . /app
 WORKDIR /app
@@ -118,7 +118,7 @@ debug with `kubectl debug` or the `:debug` tag variant. See
 ### Pin properly
 
 ```dockerfile
-FROM node:22                # floats — rebuilds are not reproducible
+FROM node:22@sha256:0e5f906573693feaa1e21057ebdcfdb5bd5021f050b2dc7c9deceb629c7da2a8                # floats — rebuilds are not reproducible
 FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da        # better
 FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da   # exact, what Renovate manages
 ```
