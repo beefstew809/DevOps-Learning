@@ -118,7 +118,7 @@ debug with `kubectl debug` or the `:debug` tag variant. See
 ### Pin properly
 
 ```dockerfile
-FROM node:24@sha256:14078204b6bb268c107ceff6d3c43f45a888105e5c2b18b14c32b3409d93a1b0                # floats — rebuilds are not reproducible
+FROM node:24@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a                # floats — rebuilds are not reproducible
 FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da        # better
 FROM node:22.11-slim@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da   # exact, what Renovate manages
 ```
