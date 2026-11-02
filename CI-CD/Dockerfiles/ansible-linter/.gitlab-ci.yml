@@ -28,7 +28,7 @@ lint-ansible-linter:
 
 .build_template: &build_template
   stage: build
-  image: quay.io/podman/stable:v5.8.9@sha256:940f7a96a8f7ee2ac512e09cb4069d1bd14a139ff7f90f0353b880e17e2b45ff
+  image: quay.io/podman/stable:v5.8.9@sha256:b6b2f33e559cd36ab31a4b54770ff4e09a55df555eef9e731159003725eda04e
   scripts:
     - cd $DOCKERFILEDIR
     - echo $REGISTRY_PASSWORD | podman login $REGISTRY --username $REGISTRY_USERNAME --password-stdin
