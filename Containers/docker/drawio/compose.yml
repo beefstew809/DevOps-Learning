@@ -1,6 +1,6 @@
 services:
   drawio:
-    image: jgraph/drawio:32.6.9@sha256:77bf6d04657320efc972575327461b5e3acc04a123182faf907f13fc7d75200b
+    image: jgraph/drawio:32.6.10@sha256:b2dfa027e7878a4a1124f38d8fc6d257526f8d77fccf6c423189fc27ae931737
     container_name: drawio
     networks:
       - proxy
