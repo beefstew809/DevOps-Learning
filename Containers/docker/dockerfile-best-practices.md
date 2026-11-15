@@ -17,14 +17,14 @@ So ordering decides rebuild speed: put what rarely changes first, what changes c
 
 ```dockerfile
 # BAD — any source change re-runs npm install
-FROM node:26-slim@sha256:5adad64f9a1fca2d51972caa65983634c8a774eb300d72b20f7f2a0f60368072
+FROM node:26-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc
 WORKDIR /app
 COPY . .
 RUN npm ci
 CMD ["node", "server.js"]
 
 # GOOD — dependencies cached until the manifests change
-FROM node:26-slim@sha256:5adad64f9a1fca2d51972caa65983634c8a774eb300d72b20f7f2a0f60368072
+FROM node:26-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
